@@ -7,3 +7,4 @@ web_venv/
 __pycache__/
 *.log
 *.env
+dev-docker-compose.yml
