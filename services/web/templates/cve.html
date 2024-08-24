@@ -5,8 +5,44 @@
 
 <ul>
   {% for cve_data in data.cve_records %}
-  <li>
+  <li style="margin-bottom: 2rem">
     <p>{{ cve_data.cve.id }}</p>
+    <div>
+      <p>{{ cve_data.cve.sourceIdentifier }}</p>
+      <p>{{ cve_data.cve.published }}</p>
+      <p>{{ cve_data.cve.lastModified }}</p>
+      <p>{{ cve_data.cve.vulnStatus }}</p>
+
+      <ul style="display: flex; flex-wrap: wrap">
+        {% for tag in cve_data.cve.cveTags %}
+        <li>{{ tag }}</li>
+        {% endfor %}
+      </ul>
+
+      <h4>Descriptions</h4>
+      <ul>
+        {% for desc in cve_data.cve.descriptions %}
+        <li>
+          {% if desc.lang == 'en' %}
+          <p>{{ desc.lang }}</p>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+
+      <h4>Metrics</h4>
+      <ul>
+        {% for metricType in cve_data.cve.metrics.keys() %}
+        <h5>Metric type: {{ metricType }}</h5>
+        {% for metric in cve_data.cve.metrics[metricType] %}
+        <li>
+          <p>Source: {{metric.source}}</p>
+          <p>Type: {{metric.type}}</p>
+        </li>
+        {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
   </li>
   {% endfor %}
 </ul>
