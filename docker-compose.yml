@@ -5,16 +5,18 @@ services:
   redis:
     image: redis:latest
     hostname: redis
+    volumes:
+      - redis_data:/data
 
   rabbit:
     hostname: ${RABBITMQ_HOST}
     image: rabbitmq:3-management
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
   mongodb:
     image: mongo:latest
     hostname: ${MONGO_DB_HOST}
-    # ports:
-    #   - "27017:27017"
     volumes:
       - mongodb_data:/data/db
     environment:
@@ -59,4 +61,6 @@ services:
       - MONGODB_DBNAME=${MONGODB_DBNAME}
 
 volumes:
+  redis_data:
+  rabbitmq_data:
   mongodb_data:
