@@ -1,4 +1,5 @@
 venv/
+producer_venv/
 *.pyc
 *.pyo
 __pycache__/
