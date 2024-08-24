@@ -1,0 +1,7 @@
+consumer_venv/
+*.pyc
+*.pyo
+__pycache__/
+*.log
+*.env
+.gitignore
