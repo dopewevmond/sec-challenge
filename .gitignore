@@ -1,5 +1,7 @@
 venv/
 producer_venv/
+consumer_venv/
+web_venv/
 *.pyc
 *.pyo
 __pycache__/
