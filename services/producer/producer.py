@@ -15,7 +15,7 @@ rabbitmq_history_queue = os.getenv("RABBITMQ_CVE_HISTORY_QUEUE", "process__cve_h
 
 CVE_API_BASEURL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 CVE_HISTORY_API_BASEURL = "https://services.nvd.nist.gov/rest/json/cvehistory/2.0"
-NUM_RESULTS_TO_PROCESS_IN_CYCLE = 500
+NUM_RESULTS_TO_PROCESS_IN_CYCLE = 100
 
 now = datetime.now()
 fts = now.strftime("%Y-%m-%dT%H:%M:%S")
