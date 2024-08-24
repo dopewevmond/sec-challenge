@@ -1,5 +1,11 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
+<h1>CVE List</h1>
 
-{% block content %}
-  <h1>CVE List</h1>
-{% endblock %}
+{% if data.ready %}
+<p>Yes, data has loaded.</p>
+{% else %}
+<p>
+  CVE records are still being loaded. Please refresh the page after a few
+  seconds to view them.
+</p>
+{% endif %} {% endblock %}

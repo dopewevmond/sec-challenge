@@ -4,6 +4,7 @@ import pika
 import uuid
 from utils import send_to_queue
 import json
+import redis
 
 app = Flask(__name__)
 
@@ -12,6 +13,9 @@ app.config["SECRET_KEY"] = SECRET_KEY
 
 rabbitmq_host = os.getenv("RABBITMQ_HOST", "localhost")
 rabbitmq_read_db_data_queue = os.getenv("RABBITMQ_CVE_READ_QUEUE", "read__cve_entry")
+redis_host = os.getenv("REDIS_HOST", "localhost")
+
+r = redis.Redis(host=redis_host, port=6379)
 
 
 @app.route("/", methods=["GET"])
@@ -31,23 +35,20 @@ def get_cves():
 
     params = {"limit": limit, "offset": offset, "request_id": request_id}
 
-    # check if key in redis with prefix of EXISTS_<request_id> exists so we know that the worker is about to process it
-    if request_id is not None: # or redis EXISTS_<request_id> key doesnt exist
-        pass
-        # lets check redis if it's ready
-        # if it is
-            # let's serialize it and return it and delete from redis
-            # delete the key in redix with prefix of EXISTS_<request_id> since it has been processed
-
-        # if it's not ready, let's return same link that says please try again in a few seconds
-        # return
-        return render_template("cve.html", data={"data": "data"})
+    if request_id is not None and r.get(f"EXISTS_{request_id}") is not None:
+        deserialized = r.get(request_id)
+        if deserialized is not None:
+            data = json.loads(deserialized)
+            data["ready"] = True
+            print(json.dumps(data, indent=2))
+            return render_template("cve.html", data=data)
+        else:
+            return render_template("cve.html", data={"ready": False})
 
     request_id = str(uuid.uuid4())
     params["request_id"] = request_id
-    
-    
-    # set a key in redix with prefix of EXISTS_<request_id> so we know it's about to be processed
+
+    r.set(f"EXISTS_{request_id}", "True", ex=86400)
 
     send_to_queue(
         channel=channel,
