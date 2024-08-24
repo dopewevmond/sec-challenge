@@ -1,4 +1,4 @@
-from pika import BasicProperties
+from pika import BasicProperties, DeliveryMode
 
 
 def generate_api_endpoints(
@@ -34,7 +34,7 @@ def send_to_queue(channel, queue_name, message):
         routing_key=queue_name,
         body=message,
         properties=BasicProperties(
-            delivery_mode=2,  # make message persistent
+            delivery_mode=DeliveryMode.Persistent,  # make message persistent
         ),
     )
     print(f" [x] Sent {message} to {queue_name}")

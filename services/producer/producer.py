@@ -4,12 +4,14 @@ import redis
 import requests
 import pika
 from utils import generate_api_endpoints, send_to_queue
+from dotenv import load_dotenv
+load_dotenv()
 
 redis_host = os.getenv("REDIS_HOST", "localhost")
 rabbitmq_host = os.getenv("RABBITMQ_HOST", "localhost")
 redis_cve_last_fetched_key = os.getenv("REDIS_LAST_FETCHED_KEY", "LAST_FETCH_CVE")
-rabbitmq_cve_queue = os.getenv("RABBITMQ_CVE_ENTRIES_QUEUE", "cve_entries_queue")
-rabbitmq_history_queue = os.getenv("RABBITMQ_CVE_HISTORY_QUEUE", "cve_history_queue")
+rabbitmq_cve_queue = os.getenv("RABBITMQ_CVE_ENTRIES_QUEUE", "process__cve_entries_queue")
+rabbitmq_history_queue = os.getenv("RABBITMQ_CVE_HISTORY_QUEUE", "process__cve_history_queue")
 
 CVE_API_BASEURL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 CVE_HISTORY_API_BASEURL = "https://services.nvd.nist.gov/rest/json/cvehistory/2.0"
