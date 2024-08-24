@@ -2,7 +2,65 @@
 <h1>CVE List</h1>
 
 {% if data.ready %}
-<p>Yes, data has loaded.</p>
+
+<ul>
+  {% for cve_data in data.cve_records %}
+  <li>
+    <p>{{ cve_data.cve.id }}</p>
+  </li>
+  {% endfor %}
+</ul>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    {% set total_pages = (data.total_records // data.limit) + (1 if
+    data.total_records % data.limit > 0 else 0) %} {% set current_page =
+    (data.offset // data.limit) + 1 %} {# Previous Page Link #}
+    <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+      {% if current_page == 1 %}
+      <span aria-hidden="true">&laquo;</span>
+      {% else %}
+      <a
+        class="page-link"
+        href="?offset={{ (current_page - 2) * data.limit }}&limit={{ data.limit }}"
+        aria-label="Previous"
+      >
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+      {% endif %}
+    </li>
+
+    {% for page_num in range(1, total_pages + 1) %}
+    <li class="page-item">
+      {% if page_num == current_page %}
+      <span>{{ page_num }}</span>
+      {% else %}
+      <a
+        class="page-link"
+        href="?offset={{ (page_num - 1) * data.limit }}&limit={{ data.limit }}"
+        >{{ page_num }}</a
+      >
+      {% endif %}
+    </li>
+    {% endfor %}
+
+    <li
+      class="page-item {% if current_page == total_pages %}disabled{% endif %}"
+    >
+      {% if current_page == total_pages %}
+      <span aria-hidden="true">&raquo;</span>
+      {% else %}
+      <a
+        class="page-link"
+        href="?offset={{ current_page * data.limit }}&limit={{ data.limit }}"
+        aria-label="Next"
+      >
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+      {% endif %}
+    </li>
+  </ul>
+</nav>
 {% else %}
 <p>
   CVE records are still being loaded. Please refresh the page after a few

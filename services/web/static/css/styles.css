@@ -15,7 +15,6 @@ body {
 }
 
 .body_container main {
-  text-align: center;
   flex: 1 1 0;
 }
 
@@ -30,4 +29,16 @@ body {
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 1.5rem;
 }

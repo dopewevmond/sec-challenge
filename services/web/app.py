@@ -40,10 +40,15 @@ def get_cves():
         if deserialized is not None:
             data = json.loads(deserialized)
             data["ready"] = True
-            print(json.dumps(data, indent=2))
+            data['limit'] = limit
+            data['offset'] = offset
             return render_template("cve.html", data=data)
         else:
-            return render_template("cve.html", data={"ready": False})
+            data = {}
+            data['limit'] = limit
+            data['offset'] = offset
+            data['ready'] = False
+            return render_template("cve.html", data=data)
 
     request_id = str(uuid.uuid4())
     params["request_id"] = request_id

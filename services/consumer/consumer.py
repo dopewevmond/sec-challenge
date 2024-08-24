@@ -6,18 +6,25 @@ import requests
 import time
 from data_writer import DataWriter
 from dotenv import load_dotenv
+import redis
 
 load_dotenv()
 
 writer = DataWriter()
 
 rabbitmq_host = os.environ.get("RABBITMQ_HOST", "localhost")
+redis_host = os.environ.get("REDIS_HOST", "localhost")
 rabbitmq_cve_entries_queue = os.environ.get(
     "RABBITMQ_CVE_ENTRIES_QUEUE", "process__cve_entries_queue"
 )
 rabbitmq_cve_history_queue = os.environ.get(
     "RABBITMQ_CVE_HISTORY_QUEUE", "process__cve_history_queue"
 )
+rabbitmq_read_db_data_queue = os.environ.get(
+    "RABBITMQ_CVE_READ_QUEUE", "read__cve_entry"
+)
+
+r = redis.Redis(host=redis_host, port=6379)
 
 
 def save_cve_callback(ch, method, properties, body):
@@ -70,13 +77,30 @@ def save_cve_history_callback(ch, method, properties, body):
     time.sleep(5)
 
 
+def write_db_data_to_redis(ch, method, properties, body):
+    try:
+        unserialized_params = body.decode()
+        params = json.loads(unserialized_params)
+        data = writer.fetch_cve_records(offset=params["offset"], limit=params["limit"])
+        r.set(params["request_id"], json.dumps(data), ex=86400)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+        print(f" [x] API Response written to Redis - {params['request_id']}")
+    except Exception as e:
+        print(f"Error writing response to redis: {e}")
+        ch.basic_nack(delivery_tag=method.delivery_tag)
+
+
 def main():
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_host))
     channel = connection.channel()
 
+    channel.queue_declare(queue=rabbitmq_read_db_data_queue, durable=True)
     channel.queue_declare(queue=rabbitmq_cve_entries_queue, durable=True)
     channel.queue_declare(queue=rabbitmq_cve_history_queue, durable=True)
     channel.basic_qos(prefetch_count=1)
+    channel.basic_consume(
+        queue=rabbitmq_read_db_data_queue, on_message_callback=write_db_data_to_redis
+    )
     channel.basic_consume(
         queue=rabbitmq_cve_entries_queue, on_message_callback=save_cve_callback
     )
