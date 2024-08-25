@@ -8,10 +8,10 @@ load_dotenv()
 
 class DataWriter:
     def __init__(self):
-        mongo_host = os.environ.get("MONGO_DB_HOST", "localhost")
-        mongo_username = os.environ.get("MONGODB_USERNAME", "username")
+        mongo_host = 'mongodb'
+        mongo_username = os.environ.get("MONGODB_USERNAME", "mongouser")
         mongo_password = os.environ.get("MONGO_DB_PASSWORD", "password")
-        mongo_database = os.environ.get("MONGODB_DBNAME", "database")
+        mongo_database = os.environ.get("MONGODB_DBNAME", "mongodb")
         client = MongoClient(
             mongo_host, 27017, username=mongo_username, password=mongo_password
         )

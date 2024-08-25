@@ -1,24 +1,25 @@
-version: '3.8'
-
 services:
-
   redis:
     image: redis:latest
-    hostname: redis
     volumes:
       - redis_data:/data
+    ports:
+      - "6379:6379"
 
-  rabbit:
-    hostname: ${RABBITMQ_HOST}
+  rabbitmq:
     image: rabbitmq:3-management
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
   mongodb:
     image: mongo:latest
-    hostname: ${MONGO_DB_HOST}
     volumes:
       - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_DB_PASSWORD}
@@ -26,39 +27,36 @@ services:
 
   web:
     build:
-      context: .
+      context: ./services/web
       dockerfile: Dockerfile
-    hostname: web
     volumes:
-      - .:/app 
+      - ./services/web:/app 
     ports:
       - "8080:8080"
-    links:
-      - rabbit
-      - redis
-      - mongodb
-    env_file:
-      - .env
 
-  worker:
+  consumer:
     build:
-      context: .
-      dockerfile: ./Worker.Dockerfile
-    links:
-      - rabbit
-      - redis
-      - mongodb
+      context: ./services/consumer
+      dockerfile: Dockerfile
     depends_on:
-      - rabbit
+      - rabbitmq
       - mongodb
+      - redis
     restart: unless-stopped
     environment:
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - WRITE_QUEUE_NAME=${WRITE_QUEUE_NAME}
-      - MONGODB_HOST=${MONGO_DB_HOST}
       - MONGODB_USERNAME=${MONGODB_USERNAME}
-      - MONGODB_PASSWORD=${MONGO_DB_PASSWORD}
+      - MONGO_DB_PASSWORD=${MONGO_DB_PASSWORD}
       - MONGODB_DBNAME=${MONGODB_DBNAME}
+
+  producercron:
+    image: ubuntu:20.04
+    build:
+      context: ./services/producer
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+      - redis
+    restart: unless-stopped
 
 volumes:
   redis_data:

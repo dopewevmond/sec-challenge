@@ -12,17 +12,11 @@ load_dotenv()
 
 writer = DataWriter()
 
-rabbitmq_host = os.environ.get("RABBITMQ_HOST", "localhost")
-redis_host = os.environ.get("REDIS_HOST", "localhost")
-rabbitmq_cve_entries_queue = os.environ.get(
-    "RABBITMQ_CVE_ENTRIES_QUEUE", "process__cve_entries_queue"
-)
-rabbitmq_cve_history_queue = os.environ.get(
-    "RABBITMQ_CVE_HISTORY_QUEUE", "process__cve_history_queue"
-)
-rabbitmq_read_db_data_queue = os.environ.get(
-    "RABBITMQ_CVE_READ_QUEUE", "read__cve_entry"
-)
+rabbitmq_host = 'rabbitmq'
+redis_host = 'redis'
+rabbitmq_cve_entries_queue = 'cve'
+# rabbitmq_cve_history_queue = 'cve_history'
+rabbitmq_read_db_data_queue = 'read_cve'
 
 r = redis.Redis(host=redis_host, port=6379)
 
@@ -53,28 +47,28 @@ def save_cve_callback(ch, method, properties, body):
     time.sleep(5)
 
 
-def save_cve_history_callback(ch, method, properties, body):
-    try:
-        url = body.decode()
-        response = requests.get(url)
+# def save_cve_history_callback(ch, method, properties, body):
+#     try:
+#         url = body.decode()
+#         response = requests.get(url)
 
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                writer.save_cve_history(data)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
-                print(f" [x] CVE HISTORY API - Done processing URL: {url}")
-            except json.JSONDecodeError:
-                print(f"Error: Received invalid JSON from {url}")
-                ch.basic_nack(delivery_tag=method.delivery_tag)
-        else:
-            print(f"Error: Received status code {response.status_code} from {url}")
-            ch.basic_nack(delivery_tag=method.delivery_tag)
+#         if response.status_code == 200:
+#             try:
+#                 data = response.json()
+#                 writer.save_cve_history(data)
+#                 ch.basic_ack(delivery_tag=method.delivery_tag)
+#                 print(f" [x] CVE HISTORY API - Done processing URL: {url}")
+#             except json.JSONDecodeError:
+#                 print(f"Error: Received invalid JSON from {url}")
+#                 ch.basic_nack(delivery_tag=method.delivery_tag)
+#         else:
+#             print(f"Error: Received status code {response.status_code} from {url}")
+#             ch.basic_nack(delivery_tag=method.delivery_tag)
 
-    except requests.exceptions.RequestException as e:
-        print(f"Error requesting {url}: {e}")
-        ch.basic_nack(delivery_tag=method.delivery_tag)
-    time.sleep(5)
+#     except requests.exceptions.RequestException as e:
+#         print(f"Error requesting {url}: {e}")
+#         ch.basic_nack(delivery_tag=method.delivery_tag)
+#     time.sleep(5)
 
 
 def write_db_data_to_redis(ch, method, properties, body):
@@ -91,12 +85,12 @@ def write_db_data_to_redis(ch, method, properties, body):
 
 
 def main():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_host))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(rabbitmq_host))
     channel = connection.channel()
 
     channel.queue_declare(queue=rabbitmq_read_db_data_queue, durable=True)
     channel.queue_declare(queue=rabbitmq_cve_entries_queue, durable=True)
-    channel.queue_declare(queue=rabbitmq_cve_history_queue, durable=True)
+    # channel.queue_declare(queue=rabbitmq_cve_history_queue, durable=True)
     channel.basic_qos(prefetch_count=1)
     channel.basic_consume(
         queue=rabbitmq_read_db_data_queue, on_message_callback=write_db_data_to_redis
@@ -104,9 +98,9 @@ def main():
     channel.basic_consume(
         queue=rabbitmq_cve_entries_queue, on_message_callback=save_cve_callback
     )
-    channel.basic_consume(
-        queue=rabbitmq_cve_history_queue, on_message_callback=save_cve_history_callback
-    )
+    # channel.basic_consume(
+    #     queue=rabbitmq_cve_history_queue, on_message_callback=save_cve_history_callback
+    # )
 
     print(" [*] Waiting for messages. To exit press CTRL+C")
     channel.start_consuming()

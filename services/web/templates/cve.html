@@ -3,51 +3,199 @@
 
 {% if data.ready %}
 
-<ul>
-  {% for cve_data in data.cve_records %}
-  <li style="margin-bottom: 2rem">
-    <p>{{ cve_data.cve.id }}</p>
+<div class="cve-container">
+  <div class="cve-column cve-column-left">
+    {% for cve_data in data.cve_records %} {% if loop.index0 % 2 == 0 %}
     <div>
-      <p>{{ cve_data.cve.sourceIdentifier }}</p>
-      <p>{{ cve_data.cve.published }}</p>
-      <p>{{ cve_data.cve.lastModified }}</p>
-      <p>{{ cve_data.cve.vulnStatus }}</p>
+      <h2>ID: {{ cve_data.cve.id }}</h2>
+      <div>
+        <p>Source identifier: {{ cve_data.cve.sourceIdentifier }}</p>
+        <p>Published: {{ cve_data.cve.published }}</p>
+        <p>Last modified: {{ cve_data.cve.lastModified }}</p>
+        <p>Vulnerability status: {{ cve_data.cve.vulnStatus }}</p>
 
-      <ul style="display: flex; flex-wrap: wrap">
-        {% for tag in cve_data.cve.cveTags %}
-        <li>{{ tag }}</li>
-        {% endfor %}
-      </ul>
+        <div class="cve-description">
+          {% for desc in cve_data.cve.descriptions %} {% if desc.lang == 'en' %}
+          <p>{{ desc.value }}</p>
+          {% endif %} {% endfor %}
+        </div>
 
-      <h4>Descriptions</h4>
-      <ul>
-        {% for desc in cve_data.cve.descriptions %}
-        <li>
-          {% if desc.lang == 'en' %}
-          <p>{{ desc.lang }}</p>
-          {% endif %}
-        </li>
+        {% for metric, metric_data in cve_data.cve.metrics.items() %}
+        <div>
+          <strong>{{ metric }}</strong>
+          {% for data in metric_data %}
+          <p>Type: {{ data.type }}</p>
+          <p>Exploitability score: {{ data.exploitabilityScore }}</p>
+          <p>Impact score: {{ data.impactScore }}</p>
+          <div>
+            <p>Version: {{ data.cvssData.version }}</p>
+            <p>Vector string: {{ data.cvssData.vectorString }}</p>
+            <p>Attack vector: {{ data.cvssData.attackVector }}</p>
+            <p>Attack complexity: {{ data.cvssData.attackComplexity }}</p>
+            <p>Privileges required: {{ data.cvssData.privilegesRequired }}</p>
+            <p>User interaction: {{ data.cvssData.userInteraction }}</p>
+            <p>Scope: {{ data.cvssData.scope }}</p>
+            <p>
+              Confidentiality impact: {{ data.cvssData.confidentialityImpact }}
+            </p>
+            <p>Integrity impact: {{ data.cvssData.integrityImpact }}</p>
+            <p>Availability impact: {{ data.cvssData.availabilityImpact }}</p>
+            <p>Base score: {{ data.cvssData.baseScore }}</p>
+            <p>Base severity: {{ data.cvssData.baseSeverity }}</p>
+          </div>
+          {% endfor %}
+        </div>
         {% endfor %}
-      </ul>
 
-      <h4>Metrics</h4>
-      <ul>
-        {% for metricType in cve_data.cve.metrics.keys() %}
-        <h5>Metric type: {{ metricType }}</h5>
-        {% for metric in cve_data.cve.metrics[metricType] %}
-        <li>
-          <p>Source: {{metric.source}}</p>
-          <p>Type: {{metric.type}}</p>
-        </li>
-        {% endfor %}
-        {% endfor %}
-      </ul>
+        <div>
+          <h3>Weaknesses</h3>
+          {% for weakness in cve_data.cve.weaknesses %}
+          <div>
+            <p>Source: {{ weakness.source }}</p>
+            <p>Type: {{ weakness.type }}</p>
+            {% for desc in weakness.description %} {% if desc.lang == 'en' %}
+            <p>Weakness: {{ desc.value }}</p>
+            {% endif %} {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div>
+          <h3>Configurations</h3>
+          {% for config in cve_data.cve.configurations %}
+          <div>
+            {% for node in config.nodes %}
+            <p>Operator: {{ node.operator }}</p>
+            {% for match in node.cpeMatch %}
+            <p>Vulnerable: {{ match.vulnerable }}</p>
+            <p>Criteria: {{ match.criteria }}</p>
+            {% if match.versionEndIncluding %}
+            <p>Version End Including: {{ match.versionEndIncluding }}</p>
+            {% endif %}
+            <p>Match Criteria ID: {{ match.matchCriteriaId }}</p>
+            {% endfor %} {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div>
+          <h3>References</h3>
+          {% for reference in cve_data.cve.references %}
+          <div>
+            <p>URL: <a href="{{ reference.url }}">{{ reference.url }}</a></p>
+            <p>Source: {{ reference.source }}</p>
+            <p>Tags:</p>
+            <ul>
+              {% for tag in reference.tags %}
+              <li>{{ tag }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
     </div>
-  </li>
-  {% endfor %}
-</ul>
+    {% endif %} {% endfor %}
+  </div>
+  <div class="cve-column cve-column-right">
+    {% for cve_data in data.cve_records %} {% if loop.index0 % 2 != 0 %}
+    <div>
+      <h2>ID: {{ cve_data.cve.id }}</h2>
+      <div>
+        <p>Source identifier: {{ cve_data.cve.sourceIdentifier }}</p>
+        <p>Published: {{ cve_data.cve.published }}</p>
+        <p>Last modified: {{ cve_data.cve.lastModified }}</p>
+        <p>Vulnerability status: {{ cve_data.cve.vulnStatus }}</p>
 
-<nav aria-label="Page navigation">
+        <div class="cve-description">
+          {% for desc in cve_data.cve.descriptions %} {% if desc.lang == 'en' %}
+          <div>
+            <p>Description</p>
+            <p>{{ desc.value }}</p>
+          </div>
+          {% endif %} {% endfor %}
+        </div>
+
+        {% for metric, metric_data in cve_data.cve.metrics.items() %}
+        <div>
+          <strong>{{ metric }}</strong>
+          {% for data in metric_data %}
+          <p>Type: {{ data.type }}</p>
+          <p>Exploitability score: {{ data.exploitabilityScore }}</p>
+          <p>Impact score: {{ data.impactScore }}</p>
+          <div>
+            <p>Version: {{ data.cvssData.version }}</p>
+            <p>Vector string: {{ data.cvssData.vectorString }}</p>
+            <p>Attack vector: {{ data.cvssData.attackVector }}</p>
+            <p>Attack complexity: {{ data.cvssData.attackComplexity }}</p>
+            <p>Privileges required: {{ data.cvssData.privilegesRequired }}</p>
+            <p>User interaction: {{ data.cvssData.userInteraction }}</p>
+            <p>Scope: {{ data.cvssData.scope }}</p>
+            <p>
+              Confidentiality impact: {{ data.cvssData.confidentialityImpact }}
+            </p>
+            <p>Integrity impact: {{ data.cvssData.integrityImpact }}</p>
+            <p>Availability impact: {{ data.cvssData.availabilityImpact }}</p>
+            <p>Base score: {{ data.cvssData.baseScore }}</p>
+            <p>Base severity: {{ data.cvssData.baseSeverity }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div>
+          <h3>Weaknesses</h3>
+          {% for weakness in cve_data.cve.weaknesses %}
+          <div>
+            <p>Source: {{ weakness.source }}</p>
+            <p>Type: {{ weakness.type }}</p>
+            {% for desc in weakness.description %} {% if desc.lang == 'en' %}
+            <p>Weakness: {{ desc.value }}</p>
+            {% endif %} {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div>
+          <h3>Configurations</h3>
+          {% for config in cve_data.cve.configurations %}
+          <div>
+            {% for node in config.nodes %}
+            <p>Operator: {{ node.operator }}</p>
+            {% for match in node.cpeMatch %}
+            <p>Vulnerable: {{ match.vulnerable }}</p>
+            <p>Criteria: {{ match.criteria }}</p>
+            {% if match.versionEndIncluding %}
+            <p>Version End Including: {{ match.versionEndIncluding }}</p>
+            {% endif %}
+            <p>Match Criteria ID: {{ match.matchCriteriaId }}</p>
+            {% endfor %} {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div>
+          <h3>References</h3>
+          {% for reference in cve_data.cve.references %}
+          <div>
+            <p>URL: <a href="{{ reference.url }}">{{ reference.url }}</a></p>
+            <p>Source: {{ reference.source }}</p>
+            <p>Tags:</p>
+            <ul>
+              {% for tag in reference.tags %}
+              <li>{{ tag }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %} {% endfor %}
+  </div>
+</div>
+
+<nav aria-label="Page navigation" style="margin-top: 2rem; border-top: 5px solid black">
   <ul class="pagination">
     {% set total_pages = (data.total_records // data.limit) + (1 if
     data.total_records % data.limit > 0 else 0) %} {% set current_page =
