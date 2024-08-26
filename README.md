@@ -7,5 +7,3 @@
 - **rabbitmq**: used as a task queue across services
 - **mongodb**: the database used to store CVE records
 - **web**: web application that fetches CVE data and displays it on the frontend. it does not interact with the database directly but through rabbitmq and data writer (consumer) services
-
-[http://ec2-34-254-252-40.eu-west-1.compute.amazonaws.com:8080/](http://ec2-34-254-252-40.eu-west-1.compute.amazonaws.com:8080/)
